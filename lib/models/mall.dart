@@ -51,25 +51,26 @@ class Mall {
       "website": website,
       "amenities": amenities,
       "average_footfall": average_footfall,
+      "image": image
     };
   }
 
   /// Create Mall object from JSON
   factory Mall.fromJson(Map<String, dynamic> json) {
     return Mall(
-      mall_id: json["mall_id"],
-      name: json["name"],
-      location: json["location"],
-      latitude: json["latitude"]?.toDouble(),
-      longitude: json["longitude"]?.toDouble(),
-      total_shops: json["total_shops"],
-      opening_hours: json["opening_hours"],
-      contact_info: json["contact_info"],
-      website: json["website"],
-      amenities: (json["amenities"] as List<dynamic>?)
-          ?.map((e) => e.toString())
-          .toList(),
-      average_footfall: json["average_footfall"],
-    );
+        mall_id: json["mall_id"],
+        name: json["name"],
+        location: json["location"],
+        latitude: json["latitude"]?.toDouble(),
+        longitude: json["longitude"]?.toDouble(),
+        total_shops: json["total_shops"],
+        opening_hours: json["opening_hours"],
+        contact_info: json["contact_info"],
+        website: json["website"],
+        amenities: (json["amenities"] as List<dynamic>?)
+            ?.map((e) => e.toString())
+            .toList(),
+        average_footfall: json["average_footfall"],
+        image: json["image"]);
   }
 }

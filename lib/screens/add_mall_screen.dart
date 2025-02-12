@@ -1,5 +1,8 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:mall_app/blocs/network_bloc/network_bloc.dart';
 import 'package:mall_app/models/mall.dart';
 import 'package:mall_app/services/hive_service.dart';
@@ -13,6 +16,8 @@ class AddMallScreen extends StatefulWidget {
 
 class _AddMallScreenState extends State<AddMallScreen> {
   final _formKey = GlobalKey<FormState>();
+  final _picker = ImagePicker();
+  XFile? _image;
 
   // Controllers for text fields
   final TextEditingController _mallIdController = TextEditingController();
@@ -37,8 +42,25 @@ class _AddMallScreenState extends State<AddMallScreen> {
     'Kids Play Area'
   ];
 
+  // Function to pick image
+  Future<void> _pickImage() async {
+    final pickedFile = await _picker.pickImage(
+      source: ImageSource.gallery, // Pick image from gallery
+    );
+    setState(() {
+      if (pickedFile != null) {
+        _image = pickedFile; // Update the selected image
+      }
+    });
+  }
+
   void _submitForm() async {
     if (_formKey.currentState!.validate()) {
+      if (_image == null) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(const SnackBar(content: Text("Please add image")));
+        return;
+      }
       int mallId = int.parse(_mallIdController.text);
       String name = _nameController.text;
       String location = _locationController.text;
@@ -61,22 +83,22 @@ class _AddMallScreenState extends State<AddMallScreen> {
           : null;
 
       Mall newMall = Mall(
-        mall_id: mallId,
-        name: name,
-        location: location,
-        latitude: latitude,
-        longitude: longitude,
-        total_shops: totalShops,
-        opening_hours: openingHours,
-        amenities: selectedAmenities,
-        average_footfall: averageFootfall,
-        contact_info: contactInfo,
-        website: website,
-      );
+          mall_id: mallId,
+          name: name,
+          location: location,
+          latitude: latitude,
+          longitude: longitude,
+          total_shops: totalShops,
+          opening_hours: openingHours,
+          amenities: selectedAmenities,
+          average_footfall: averageFootfall,
+          contact_info: contactInfo,
+          website: website,
+          image: _image!.path);
 
       final networkState = context.read<NetworkBloc>().state;
       if (networkState is NetworkSuccess) {
-        //perform network request
+        //send mall data to backend
       } else {
         //save locally
         await HiveService.saveMall(newMall);
@@ -122,6 +144,7 @@ class _AddMallScreenState extends State<AddMallScreen> {
                 _buildTextField(_footfallController, "Average Footfall",
                     "Enter Average Footfall",
                     isNumber: true),
+                _buildImageSelector(),
                 _buildAmenitiesSelector(),
                 SizedBox(height: 20),
                 ElevatedButton(
@@ -154,6 +177,35 @@ class _AddMallScreenState extends State<AddMallScreen> {
           labelText: label,
           hintText: hint,
           border: OutlineInputBorder(),
+        ),
+      ),
+    );
+  }
+
+  // Image Selector Widget
+  Widget _buildImageSelector() {
+    return GestureDetector(
+      onTap: _pickImage,
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 12.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text("Mall Image",
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            SizedBox(height: 10),
+            _image == null
+                ? Icon(Icons.image, size: 100, color: Colors.grey)
+                : Image.file(
+                    File(_image!.path),
+                    height: 100,
+                    width: 100,
+                    fit: BoxFit.cover,
+                  ),
+            SizedBox(height: 10),
+            Text("Tap to select an image",
+                style: TextStyle(fontSize: 14, color: Colors.grey)),
+          ],
         ),
       ),
     );

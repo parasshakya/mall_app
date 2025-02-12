@@ -1,9 +1,12 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mall_app/blocs/network_bloc/network_bloc.dart';
 import 'package:mall_app/models/mall.dart';
 import 'package:mall_app/screens/add_mall_screen.dart';
 import 'package:mall_app/services/hive_service.dart';
+import 'package:mall_app/widgets/mall_card.dart';
 
 class MallsScreen extends StatefulWidget {
   const MallsScreen({super.key});
@@ -85,9 +88,11 @@ class _MallsScreenState extends State<MallsScreen> {
                   itemCount: _malls.length,
                   itemBuilder: (context, index) {
                     final mall = _malls[index];
-                    return ListTile(
-                      title: Text(mall.name),
-                    );
+                    return Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: MallCard(
+                          mall: mall,
+                        ));
                   }),
         ));
   }
