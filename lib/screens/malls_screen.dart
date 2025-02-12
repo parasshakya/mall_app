@@ -88,6 +88,7 @@ class _MallsScreenState extends State<MallsScreen> {
                   itemCount: _malls.length,
                   itemBuilder: (context, index) {
                     final mall = _malls[index];
+
                     return Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: MallCard(

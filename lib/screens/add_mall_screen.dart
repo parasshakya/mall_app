@@ -43,9 +43,9 @@ class _AddMallScreenState extends State<AddMallScreen> {
   ];
 
   // Function to pick image
-  Future<void> _pickImage() async {
+  Future<void> _pickImage(ImageSource source) async {
     final pickedFile = await _picker.pickImage(
-      source: ImageSource.gallery, // Pick image from gallery
+      source: source, // Pick image from gallery
     );
     setState(() {
       if (pickedFile != null) {
@@ -144,7 +144,13 @@ class _AddMallScreenState extends State<AddMallScreen> {
                 _buildTextField(_footfallController, "Average Footfall",
                     "Enter Average Footfall",
                     isNumber: true),
+                SizedBox(
+                  height: 20,
+                ),
                 _buildImageSelector(),
+                SizedBox(
+                  height: 20,
+                ),
                 _buildAmenitiesSelector(),
                 SizedBox(height: 20),
                 ElevatedButton(
@@ -184,30 +190,55 @@ class _AddMallScreenState extends State<AddMallScreen> {
 
   // Image Selector Widget
   Widget _buildImageSelector() {
-    return GestureDetector(
-      onTap: _pickImage,
-      child: Padding(
-        padding: const EdgeInsets.only(bottom: 12.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text("Mall Image",
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            SizedBox(height: 10),
-            _image == null
-                ? Icon(Icons.image, size: 100, color: Colors.grey)
-                : Image.file(
-                    File(_image!.path),
-                    height: 100,
-                    width: 100,
-                    fit: BoxFit.cover,
-                  ),
-            SizedBox(height: 10),
-            Text("Tap to select an image",
-                style: TextStyle(fontSize: 14, color: Colors.grey)),
-          ],
+    return Column(
+      children: [
+        Text("Mall Image",
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        SizedBox(height: 10),
+        _image == null
+            ? Icon(Icons.image, size: 100, color: Colors.grey)
+            : Image.file(
+                File(_image!.path),
+                height: 100,
+                width: 100,
+                fit: BoxFit.cover,
+              ),
+        SizedBox(height: 10),
+        ElevatedButton(
+          onPressed: _showImagePickerOptions,
+          child: Text("Upload Photo"),
         ),
-      ),
+      ],
+    );
+  }
+
+  void _showImagePickerOptions() {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return SafeArea(
+          child: Wrap(
+            children: [
+              ListTile(
+                leading: Icon(Icons.camera_alt),
+                title: Text("From Camera"),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickImage(ImageSource.camera);
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.image),
+                title: Text("From Gallery"),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickImage(ImageSource.gallery);
+                },
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 

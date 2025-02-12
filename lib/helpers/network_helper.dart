@@ -9,11 +9,13 @@ class NetworkHelper {
       if (connectivityResult.contains(ConnectivityResult.mobile)) {
         // Mobile network available.
         NetworkBloc().add(NetworkNotify(isConnected: true));
+        //upload mall and shop data to backend
       } else if (connectivityResult.contains(ConnectivityResult.wifi)) {
         // Wi-fi is available.
         // Note for Android:
         // When both mobile and Wi-Fi are turned on system will return Wi-Fi only as active network type
         NetworkBloc().add(NetworkNotify(isConnected: true));
+        //upload mall and shop data to backend
       } else if (connectivityResult.contains(ConnectivityResult.ethernet)) {
         // Ethernet connection available.
       } else if (connectivityResult.contains(ConnectivityResult.vpn)) {
