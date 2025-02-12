@@ -27,7 +27,7 @@ class _MallsScreenState extends State<MallsScreen> {
     if (fromLocalStorage) {
       _malls = HiveService.getAllMalls();
     } else {
-      //load malls from backend
+      //load malls from backend and save them locally
 
       _malls = [];
     }

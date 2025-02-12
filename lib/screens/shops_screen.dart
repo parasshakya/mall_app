@@ -26,7 +26,7 @@ class _ShopsScreenState extends State<ShopsScreen> {
       //load shops from local storage
       _shops = HiveService.getAllShops();
     } else {
-      //load shops from backend
+      //load shops from backend and save them locally
       _shops = [];
     }
 

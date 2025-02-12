@@ -1,5 +1,8 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:mall_app/blocs/network_bloc/network_bloc.dart';
 import 'package:mall_app/models/shop.dart';
 import 'package:mall_app/services/hive_service.dart';
@@ -13,6 +16,8 @@ class AddShopScreen extends StatefulWidget {
 
 class _AddShopScreenState extends State<AddShopScreen> {
   final _formKey = GlobalKey<FormState>();
+  final _picker = ImagePicker();
+  XFile? _image;
 
   // Controllers for text fields
   final TextEditingController _shopIdController = TextEditingController();
@@ -55,9 +60,25 @@ class _AddShopScreenState extends State<AddShopScreen> {
     'LinkedIn',
     'TikTok'
   ];
+  Future<void> _pickImage(ImageSource source) async {
+    final pickedFile = await _picker.pickImage(
+      source: source, // Pick image from gallery
+    );
+    setState(() {
+      if (pickedFile != null) {
+        _image = pickedFile; // Update the selected image
+      }
+    });
+  }
 
   void _submitForm() async {
     if (_formKey.currentState!.validate()) {
+      if (_image == null) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text("Please add image")));
+        return;
+      }
+
       int shopId = int.parse(_shopIdController.text);
       int mallId = int.parse(_mallIdController.text);
       String name = _nameController.text;
@@ -80,22 +101,22 @@ class _AddShopScreenState extends State<AddShopScreen> {
           : null;
 
       Shop newShop = Shop(
-        shop_id: shopId,
-        mall_id: mallId,
-        name: name,
-        category: category,
-        floor_number: floorNumber,
-        unit_number: unitNumber,
-        owner_name: ownerName,
-        contact_number: contactNumber,
-        email: email,
-        opening_hours: openingHours,
-        products: selectedProducts,
-        average_monthly_sales: avgSales,
-        customer_traffic: customerTraffic,
-        social_media_links: selectedSocialMediaLinks,
-        payment_methods_accepted: selectedPaymentMethods,
-      );
+          shop_id: shopId,
+          mall_id: mallId,
+          name: name,
+          category: category,
+          floor_number: floorNumber,
+          unit_number: unitNumber,
+          owner_name: ownerName,
+          contact_number: contactNumber,
+          email: email,
+          opening_hours: openingHours,
+          products: selectedProducts,
+          average_monthly_sales: avgSales,
+          customer_traffic: customerTraffic,
+          social_media_links: selectedSocialMediaLinks,
+          payment_methods_accepted: selectedPaymentMethods,
+          image: _image!.path);
 
       final networkState = context.read<NetworkBloc>().state;
       if (networkState is NetworkSuccess) {
@@ -150,10 +171,15 @@ class _AddShopScreenState extends State<AddShopScreen> {
                 _buildTextField(_trafficController, "Customer Traffic",
                     "Enter Customer Traffic",
                     isNumber: true),
+                SizedBox(height: 20),
+                Center(child: _buildImageSelector()),
+                SizedBox(height: 20),
                 _buildMultiSelectChips(
                     "Products", productOptions, selectedProducts),
+                SizedBox(height: 20),
                 _buildMultiSelectChips(
                     "Payment Methods", paymentOptions, selectedPaymentMethods),
+                SizedBox(height: 20),
                 _buildMultiSelectChips("Social Media Links", socialMediaOptions,
                     selectedSocialMediaLinks),
                 SizedBox(height: 20),
@@ -168,6 +194,59 @@ class _AddShopScreenState extends State<AddShopScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildImageSelector() {
+    return Column(
+      children: [
+        Text("Shop Image",
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        SizedBox(height: 10),
+        _image == null
+            ? Icon(Icons.image, size: 100, color: Colors.grey)
+            : Image.file(
+                File(_image!.path),
+                height: 100,
+                width: 100,
+                fit: BoxFit.cover,
+              ),
+        SizedBox(height: 10),
+        ElevatedButton(
+          onPressed: _showImagePickerOptions,
+          child: Text("Upload Photo"),
+        ),
+      ],
+    );
+  }
+
+  void _showImagePickerOptions() {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return SafeArea(
+          child: Wrap(
+            children: [
+              ListTile(
+                leading: Icon(Icons.camera_alt),
+                title: Text("From Camera"),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickImage(ImageSource.camera);
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.image),
+                title: Text("From Gallery"),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickImage(ImageSource.gallery);
+                },
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 

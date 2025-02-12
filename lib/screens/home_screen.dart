@@ -24,10 +24,10 @@ class _HomeScreenState extends State<HomeScreen> {
             bottomNavigationBar: const TabBar(
               tabs: [
                 Tab(
-                  icon: Icon(Icons.business_center),
+                  child: Text("🏬 Malls"),
                 ),
                 Tab(
-                  icon: Icon(Icons.shop),
+                  child: Text("🏪 Shops"),
                 ),
               ],
             )),
