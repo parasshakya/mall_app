@@ -14,23 +14,36 @@ class MallsScreen extends StatefulWidget {
 
 class _MallsScreenState extends State<MallsScreen> {
   List<Mall> _malls = [];
-  bool loading = false;
+  bool _loading = false;
 
-  loadMalls() async {
+  loadMalls({bool fromLocalStorage = false}) async {
     setState(() {
-      loading = true;
+      _loading = true;
     });
-    _malls = HiveService.getAllMalls();
+
+    if (fromLocalStorage) {
+      _malls = HiveService.getAllMalls();
+    } else {
+      //load malls from backend
+
+      _malls = [];
+    }
 
     setState(() {
-      loading = false;
+      _loading = false;
     });
   }
 
   @override
   void initState() {
-    loadMalls();
     super.initState();
+    // Trigger loadMalls() every time the page is visited
+    final networkState = context.read<NetworkBloc>().state;
+    if (networkState is NetworkSuccess) {
+      loadMalls();
+    } else {
+      loadMalls(fromLocalStorage: true);
+    }
   }
 
   @override
@@ -56,17 +69,26 @@ class _MallsScreenState extends State<MallsScreen> {
             )
           ],
         ),
-        body: loading
-            ? const Center(
-                child: CircularProgressIndicator(),
-              )
-            : ListView.builder(
-                itemCount: _malls.length,
-                itemBuilder: (context, index) {
-                  final mall = _malls[index];
-                  return ListTile(
-                    title: Text(mall.name),
-                  );
-                }));
+        body: BlocListener<NetworkBloc, NetworkState>(
+          listener: (context, state) {
+            if (state is NetworkSuccess) {
+              loadMalls();
+            } else {
+              loadMalls(fromLocalStorage: true);
+            }
+          },
+          child: _loading
+              ? const Center(
+                  child: CircularProgressIndicator(),
+                )
+              : ListView.builder(
+                  itemCount: _malls.length,
+                  itemBuilder: (context, index) {
+                    final mall = _malls[index];
+                    return ListTile(
+                      title: Text(mall.name),
+                    );
+                  }),
+        ));
   }
 }

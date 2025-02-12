@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mall_app/blocs/network_bloc/network_bloc.dart';
 import 'package:mall_app/models/shop.dart';
 import 'package:mall_app/services/hive_service.dart';
 
@@ -95,11 +97,18 @@ class _AddShopScreenState extends State<AddShopScreen> {
         payment_methods_accepted: selectedPaymentMethods,
       );
 
-      await HiveService.saveShop(newShop);
+      final networkState = context.read<NetworkBloc>().state;
+      if (networkState is NetworkSuccess) {
+        //submit shop data to backend
+      } else {
+        //save shop data locally
+
+        await HiveService.saveShop(newShop);
+      }
 
       print("Shop Data Added: ${newShop.name}");
       ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text("Shop Data Added!")));
+          .showSnackBar(SnackBar(content: Text("Shop Data Saved!")));
     }
   }
 
