@@ -67,32 +67,33 @@ class Shop {
       "customer_traffic": customer_traffic,
       "social_media_links": social_media_links,
       "payment_methods_accepted": payment_methods_accepted,
+      "image": image
     };
   }
 
   /// Create Shop object from JSON
   factory Shop.fromJson(Map<String, dynamic> json) {
     return Shop(
-      shop_id: json["shop_id"],
-      mall_id: json["mall_id"],
-      name: json["name"],
-      category: json["category"],
-      floor_number: json["floor_number"],
-      unit_number: json["unit_number"],
-      owner_name: json["owner_name"],
-      contact_number: json["contact_number"],
-      email: json["email"],
-      opening_hours: json["opening_hours"],
-      products: List<String>.from(json["products"]),
-      average_monthly_sales: json["average_monthly_sales"]?.toDouble(),
-      customer_traffic: json["customer_traffic"],
-      social_media_links: (json["social_media_links"] as List<dynamic>?)
-          ?.map((e) => e.toString())
-          .toList(),
-      payment_methods_accepted:
-          (json["payment_methods_accepted"] as List<dynamic>?)
-              ?.map((e) => e.toString())
-              .toList(),
-    );
+        shop_id: json["shop_id"],
+        mall_id: json["mall_id"],
+        name: json["name"],
+        category: json["category"],
+        floor_number: json["floor_number"],
+        unit_number: json["unit_number"],
+        owner_name: json["owner_name"],
+        contact_number: json["contact_number"],
+        email: json["email"],
+        opening_hours: json["opening_hours"],
+        products: List<String>.from(json["products"]),
+        average_monthly_sales: json["average_monthly_sales"]?.toDouble(),
+        customer_traffic: json["customer_traffic"],
+        social_media_links: (json["social_media_links"] as List<dynamic>?)
+            ?.map((e) => e.toString())
+            .toList(),
+        payment_methods_accepted:
+            (json["payment_methods_accepted"] as List<dynamic>?)
+                ?.map((e) => e.toString())
+                .toList(),
+        image: json["image"]);
   }
 }

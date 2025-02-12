@@ -4,6 +4,7 @@ import 'package:mall_app/blocs/network_bloc/network_bloc.dart';
 import 'package:mall_app/models/shop.dart';
 import 'package:mall_app/screens/add_shop_screen.dart';
 import 'package:mall_app/services/hive_service.dart';
+import 'package:mall_app/widgets/shop_card.dart';
 
 class ShopsScreen extends StatefulWidget {
   const ShopsScreen({super.key});
@@ -78,9 +79,7 @@ class _ShopsScreenState extends State<ShopsScreen> {
                   itemCount: _shops.length,
                   itemBuilder: (context, index) {
                     final shop = _shops[index];
-                    return ListTile(
-                      title: Text(shop.name),
-                    );
+                    return ShopCard(shop: shop);
                   }),
         ));
   }
