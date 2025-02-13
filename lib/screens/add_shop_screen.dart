@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mall_app/blocs/network_bloc/network_bloc.dart';
 import 'package:mall_app/models/shop.dart';
+import 'package:mall_app/services/csv_service.dart';
 import 'package:mall_app/services/hive_service.dart';
 
 class AddShopScreen extends StatefulWidget {
@@ -126,6 +127,8 @@ class _AddShopScreenState extends State<AddShopScreen> {
 
         await HiveService.saveShop(newShop);
       }
+
+      await CSVService.appendSingleShopToCSV(newShop);
 
       print("Shop Data Added: ${newShop.name}");
       ScaffoldMessenger.of(context)

@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mall_app/blocs/network_bloc/network_bloc.dart';
 import 'package:mall_app/models/mall.dart';
+import 'package:mall_app/services/csv_service.dart';
 import 'package:mall_app/services/hive_service.dart';
 
 class AddMallScreen extends StatefulWidget {
@@ -103,6 +104,8 @@ class _AddMallScreenState extends State<AddMallScreen> {
         //save locally
         await HiveService.saveMall(newMall);
       }
+      await CSVService.appendSingleMallToCSV(newMall);
+
       // You can now use `newMall` for further processing
       print("Mall Data Saved: ${newMall.name}");
       ScaffoldMessenger.of(context)
