@@ -32,6 +32,8 @@ class _AddMallScreenState extends State<AddMallScreen> {
   final TextEditingController _contactInfoController = TextEditingController();
   final TextEditingController _websiteController = TextEditingController();
   final TextEditingController _footfallController = TextEditingController();
+  final TextEditingController _openingTimeController = TextEditingController();
+  final TextEditingController _closingTimeController = TextEditingController();
 
   // Selected Amenities
   List<String> selectedAmenities = [];
@@ -56,6 +58,20 @@ class _AddMallScreenState extends State<AddMallScreen> {
     });
   }
 
+  Future<void> _selectTime(
+      BuildContext context, TextEditingController controller) async {
+    TimeOfDay? pickedTime = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.now(),
+    );
+
+    if (pickedTime != null) {
+      setState(() {
+        controller.text = pickedTime.format(context);
+      });
+    }
+  }
+
   void _submitForm() async {
     if (_formKey.currentState!.validate()) {
       if (_image == null) {
@@ -75,9 +91,18 @@ class _AddMallScreenState extends State<AddMallScreen> {
       int? totalShops = _totalShopsController.text.isNotEmpty
           ? int.parse(_totalShopsController.text)
           : null;
-      String? openingHours = _openingHoursController.text.isNotEmpty
-          ? _openingHoursController.text
+      String? openingTime = _openingTimeController.text.isNotEmpty
+          ? _openingTimeController.text
           : null;
+      String? closingTime = _closingTimeController.text.isNotEmpty
+          ? _closingTimeController.text
+          : null;
+      String? openingHours;
+
+      if (openingTime != null && closingTime != null) {
+        openingHours = "$openingTime - $closingTime";
+      }
+
       String contactInfo = _contactInfoController.text;
       String website = _websiteController.text;
       int? averageFootfall = _footfallController.text.isNotEmpty
@@ -105,7 +130,7 @@ class _AddMallScreenState extends State<AddMallScreen> {
         //save locally
         await HiveService.saveMall(newMall);
       }
-      await CSVService.appendSingleMallToCSV(newMall);
+      // await CSVService.appendSingleMallToCSV(newMall);
       await ExcelService.appendSingleMallToExcel(newMall);
 
       // You can now use `newMall` for further processing
@@ -141,8 +166,7 @@ class _AddMallScreenState extends State<AddMallScreen> {
                 _buildTextField(
                     _totalShopsController, "Total Shops", "Enter Total Shops",
                     isNumber: true),
-                _buildTextField(_openingHoursController, "Opening Hours",
-                    "e.g., 10 AM - 9 PM"),
+                _buildTimeSelector(),
                 _buildTextField(_contactInfoController, "Contact Info",
                     "Enter Contact Info"),
                 _buildTextField(_websiteController, "Website", "Enter Website"),
@@ -189,6 +213,61 @@ class _AddMallScreenState extends State<AddMallScreen> {
           hintText: hint,
           border: OutlineInputBorder(),
         ),
+      ),
+    );
+  }
+
+  Widget _buildTimeSelector() {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text("Operating Hours",
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(
+                child: TextFormField(
+                  controller: _openingTimeController,
+                  readOnly: true,
+                  decoration: InputDecoration(
+                    labelText: "Opening Time",
+                    suffixIcon: Icon(Icons.access_time),
+                    border: OutlineInputBorder(),
+                  ),
+                  onTap: () => _selectTime(context, _openingTimeController),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return "Please enter opening time";
+                    }
+                    return null;
+                  },
+                ),
+              ),
+              SizedBox(width: 10),
+              Expanded(
+                child: TextFormField(
+                  controller: _closingTimeController,
+                  readOnly: true,
+                  decoration: InputDecoration(
+                    labelText: "Closing Time",
+                    suffixIcon: Icon(Icons.access_time),
+                    border: OutlineInputBorder(),
+                  ),
+                  onTap: () => _selectTime(context, _closingTimeController),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return "Please enter closing time";
+                    }
+                    return null;
+                  },
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
