@@ -38,6 +38,8 @@ class _AddShopScreenState extends State<AddShopScreen> {
   final TextEditingController _openingHoursController = TextEditingController();
   final TextEditingController _salesController = TextEditingController();
   final TextEditingController _trafficController = TextEditingController();
+  final TextEditingController _openingTimeController = TextEditingController();
+  final TextEditingController _closingTimeController = TextEditingController();
 
   // Multi-select lists
   List<String> selectedProducts = [];
@@ -97,7 +99,17 @@ class _AddShopScreenState extends State<AddShopScreen> {
       String ownerName = _ownerNameController.text;
       String contactNumber = _contactNumberController.text;
       String email = _emailController.text;
-      String openingHours = _openingHoursController.text;
+      String? openingTime = _openingTimeController.text.isNotEmpty
+          ? _openingTimeController.text
+          : null;
+      String? closingTime = _closingTimeController.text.isNotEmpty
+          ? _closingTimeController.text
+          : null;
+      String openingHours = "";
+
+      if (openingTime != null && closingTime != null) {
+        openingHours = "$openingTime - $closingTime";
+      }
       double? avgSales = _salesController.text.isNotEmpty
           ? double.parse(_salesController.text)
           : null;
@@ -169,8 +181,7 @@ class _AddShopScreenState extends State<AddShopScreen> {
                 _buildTextField(_contactNumberController, "Contact Number",
                     "Enter Contact Number"),
                 _buildTextField(_emailController, "Email", "Enter Email"),
-                _buildTextField(_openingHoursController, "Opening Hours",
-                    "e.g., 10 AM - 9 PM"),
+                _buildTimeSelector(),
                 _buildTextField(_salesController, "Avg. Monthly Sales",
                     "Enter Avg. Monthly Sales",
                     isNumber: true),
@@ -201,6 +212,75 @@ class _AddShopScreenState extends State<AddShopScreen> {
         ),
       ),
     );
+  }
+
+  Widget _buildTimeSelector() {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text("Operating Hours",
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(
+                child: TextFormField(
+                  controller: _openingTimeController,
+                  readOnly: true,
+                  decoration: InputDecoration(
+                    labelText: "Opening Time",
+                    suffixIcon: Icon(Icons.access_time),
+                    border: OutlineInputBorder(),
+                  ),
+                  onTap: () => _selectTime(context, _openingTimeController),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return "Please enter opening time";
+                    }
+                    return null;
+                  },
+                ),
+              ),
+              SizedBox(width: 10),
+              Expanded(
+                child: TextFormField(
+                  controller: _closingTimeController,
+                  readOnly: true,
+                  decoration: InputDecoration(
+                    labelText: "Closing Time",
+                    suffixIcon: Icon(Icons.access_time),
+                    border: OutlineInputBorder(),
+                  ),
+                  onTap: () => _selectTime(context, _closingTimeController),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return "Please enter closing time";
+                    }
+                    return null;
+                  },
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _selectTime(
+      BuildContext context, TextEditingController controller) async {
+    TimeOfDay? pickedTime = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.now(),
+    );
+
+    if (pickedTime != null) {
+      setState(() {
+        controller.text = pickedTime.format(context);
+      });
+    }
   }
 
   Widget _buildImageSelector() {
