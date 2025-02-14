@@ -1,68 +1,70 @@
 import 'dart:io';
 import 'package:excel/excel.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:flutter/material.dart';
 import 'package:mall_app/models/shop.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:mall_app/models/mall.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class ExcelService {
   static Future<void> appendSingleMallToExcel(Mall mall) async {
-    final directory = Directory('/storage/emulated/0/Download');
-    final path = "${directory.path}/malls.xlsx";
-    final file = File(path);
+    if (await _requestStoragePermission()) {
+      final directory = Directory('/storage/emulated/0/Download');
+      File file = File('$directory/malls.xlsx');
+      Excel excel;
 
-    Excel excel;
+      if (await file.exists()) {
+        // Load existing Excel file
+        var bytes = file.readAsBytesSync();
+        excel = Excel.decodeBytes(bytes);
+      } else {
+        // Create a new Excel file
+        excel = Excel.createExcel();
+      }
 
-    if (await file.exists()) {
-      // Load existing Excel file
-      var bytes = file.readAsBytesSync();
-      excel = Excel.decodeBytes(bytes);
-    } else {
-      // Create a new Excel file
-      excel = Excel.createExcel();
-    }
+      Sheet sheet = excel['Malls'];
 
-    Sheet sheet = excel['Malls'];
+      // If the sheet is empty, add headers first
+      if (sheet.rows.isEmpty) {
+        sheet.appendRow([
+          TextCellValue("Mall ID"),
+          TextCellValue("Name"),
+          TextCellValue("Location"),
+          TextCellValue("Latitude"),
+          TextCellValue("Longitude"),
+          TextCellValue("Total Shops"),
+          TextCellValue("Opening Hours"),
+          TextCellValue("Contact Info"),
+          TextCellValue("Website"),
+          TextCellValue("Amenities"),
+          TextCellValue("Average Footfall"),
+          TextCellValue("Image")
+        ]);
+      }
 
-    // If the sheet is empty, add headers first
-    if (sheet.rows.isEmpty) {
+      // Append the new mall data
       sheet.appendRow([
-        TextCellValue("Mall ID"),
-        TextCellValue("Name"),
-        TextCellValue("Location"),
-        TextCellValue("Latitude"),
-        TextCellValue("Longitude"),
-        TextCellValue("Total Shops"),
-        TextCellValue("Opening Hours"),
-        TextCellValue("Contact Info"),
-        TextCellValue("Website"),
-        TextCellValue("Amenities"),
-        TextCellValue("Average Footfall"),
-        TextCellValue("Image")
+        TextCellValue(mall.mall_id.toString()),
+        TextCellValue(mall.name),
+        TextCellValue(mall.location),
+        TextCellValue(mall.latitude?.toString() ?? ""),
+        TextCellValue(mall.longitude?.toString() ?? ""),
+        TextCellValue(mall.total_shops?.toString() ?? ""),
+        TextCellValue(mall.opening_hours ?? ""),
+        TextCellValue(mall.contact_info),
+        TextCellValue(mall.website),
+        TextCellValue(mall.amenities?.join(", ") ?? ""),
+        TextCellValue(mall.average_footfall?.toString() ?? ""),
+        TextCellValue(mall.image ?? ""),
       ]);
-    }
 
-    // Append the new mall data
-    sheet.appendRow([
-      TextCellValue(mall.mall_id.toString()),
-      TextCellValue(mall.name),
-      TextCellValue(mall.location),
-      TextCellValue(mall.latitude?.toString() ?? ""),
-      TextCellValue(mall.longitude?.toString() ?? ""),
-      TextCellValue(mall.total_shops?.toString() ?? ""),
-      TextCellValue(mall.opening_hours ?? ""),
-      TextCellValue(mall.contact_info),
-      TextCellValue(mall.website),
-      TextCellValue(mall.amenities?.join(", ") ?? ""),
-      TextCellValue(mall.average_footfall?.toString() ?? ""),
-      TextCellValue(mall.image ?? ""),
-    ]);
-
-    // Save the Excel file
-    List<int>? bytes = excel.save();
-    if (bytes != null) {
-      File(file.path)
-        ..createSync(recursive: true)
-        ..writeAsBytesSync(bytes);
+      // Save the Excel file
+      List<int>? bytes = excel.save();
+      if (bytes != null) {
+        File(file.path)
+          ..createSync(recursive: true)
+          ..writeAsBytesSync(bytes);
+      }
     }
   }
 
@@ -132,6 +134,17 @@ class ExcelService {
       File(file.path)
         ..createSync(recursive: true)
         ..writeAsBytesSync(bytes);
+    }
+  }
+
+  // Request storage permissions
+  static Future<bool> _requestStoragePermission() async {
+    final status = await Permission.manageExternalStorage.status;
+    if (status.isGranted) {
+      return true;
+    } else {
+      print("Storage permission denied");
+      return false;
     }
   }
 }
