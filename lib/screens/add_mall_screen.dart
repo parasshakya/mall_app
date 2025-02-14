@@ -5,9 +5,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mall_app/blocs/network_bloc/network_bloc.dart';
 import 'package:mall_app/models/mall.dart';
+import 'package:mall_app/providers/malls_provider.dart';
 import 'package:mall_app/services/csv_service.dart';
 import 'package:mall_app/services/excel_service.dart';
 import 'package:mall_app/services/hive_service.dart';
+import 'package:provider/provider.dart';
 
 class AddMallScreen extends StatefulWidget {
   const AddMallScreen({super.key});
@@ -20,6 +22,7 @@ class _AddMallScreenState extends State<AddMallScreen> {
   final _formKey = GlobalKey<FormState>();
   final _picker = ImagePicker();
   XFile? _image;
+  late MallsProvider _mallsProvider;
 
   // Controllers for text fields
   final TextEditingController _mallIdController = TextEditingController();
@@ -123,13 +126,11 @@ class _AddMallScreenState extends State<AddMallScreen> {
           website: website,
           image: _image!.path);
 
-      final networkState = context.read<NetworkBloc>().state;
-      if (networkState is NetworkSuccess) {
-        //send mall data to backend
-      } else {
-        //save locally
-        await HiveService.saveMall(newMall);
-      }
+      //save locally
+      await HiveService.saveMall(newMall);
+
+      _mallsProvider.addMall(newMall);
+
       // await CSVService.appendSingleMallToCSV(newMall);
       await ExcelService.appendSingleMallToExcel(newMall);
 
@@ -142,6 +143,7 @@ class _AddMallScreenState extends State<AddMallScreen> {
 
   @override
   Widget build(BuildContext context) {
+    _mallsProvider = Provider.of<MallsProvider>(context);
     return Scaffold(
       appBar: AppBar(title: Text("Mall Form")),
       body: Padding(

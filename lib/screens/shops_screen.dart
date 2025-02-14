@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mall_app/blocs/network_bloc/network_bloc.dart';
 import 'package:mall_app/models/shop.dart';
+import 'package:mall_app/providers/shops_provider.dart';
 import 'package:mall_app/screens/add_shop_screen.dart';
 import 'package:mall_app/services/hive_service.dart';
 import 'package:mall_app/widgets/shop_card.dart';
+import 'package:provider/provider.dart';
 
 class ShopsScreen extends StatefulWidget {
   const ShopsScreen({super.key});
@@ -14,41 +16,46 @@ class ShopsScreen extends StatefulWidget {
 }
 
 class _ShopsScreenState extends State<ShopsScreen> {
-  bool _loading = false;
-  List<Shop> _shops = [];
+  bool _loading = true;
+  late ShopsProvider _shopsProvider;
 
-  _loadShops({bool fromLocalStorage = false}) async {
-    setState(() {
-      _loading = true;
+  // _loadShops({bool fromLocalStorage = false}) async {
+  //   setState(() {
+  //     _loading = true;
+  //   });
+
+  //   if (fromLocalStorage) {
+  //     //load shops from local storage
+  //     _shops = HiveService.getAllShops();
+  //   } else {
+  //     //load shops from backend and save them locally
+  //     _shops = [];
+  //   }
+
+  //   setState(() {
+  //     _loading = false;
+  //   });
+  // }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      _loadShops();
     });
+  }
 
-    if (fromLocalStorage) {
-      //load shops from local storage
-      _shops = HiveService.getAllShops();
-    } else {
-      //load shops from backend and save them locally
-      _shops = [];
-    }
-
+  _loadShops() {
+    final shops = HiveService.getAllShops();
+    _shopsProvider.loadShops(shops);
     setState(() {
       _loading = false;
     });
   }
 
   @override
-  void initState() {
-    super.initState();
-    // Trigger loadShops() every time the page is visited
-    final networkState = context.read<NetworkBloc>().state;
-    if (networkState is NetworkSuccess) {
-      _loadShops();
-    } else {
-      _loadShops(fromLocalStorage: true);
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
+    _shopsProvider = Provider.of<ShopsProvider>(context);
     return Scaffold(
         appBar: AppBar(
           backgroundColor: Colors.grey.shade300,
@@ -63,24 +70,15 @@ class _ShopsScreenState extends State<ShopsScreen> {
             )
           ],
         ),
-        body: BlocListener<NetworkBloc, NetworkState>(
-          listener: (context, state) {
-            if (state is NetworkSuccess) {
-              _loadShops();
-            } else {
-              _loadShops(fromLocalStorage: true);
-            }
-          },
-          child: _loading
-              ? const Center(
-                  child: CircularProgressIndicator(),
-                )
-              : ListView.builder(
-                  itemCount: _shops.length,
-                  itemBuilder: (context, index) {
-                    final shop = _shops[index];
-                    return ShopCard(shop: shop);
-                  }),
-        ));
+        body: _loading
+            ? const Center(
+                child: CircularProgressIndicator(),
+              )
+            : ListView.builder(
+                itemCount: _shopsProvider.shops.length,
+                itemBuilder: (context, index) {
+                  final shop = _shopsProvider.shops[index];
+                  return ShopCard(shop: shop);
+                }));
   }
 }

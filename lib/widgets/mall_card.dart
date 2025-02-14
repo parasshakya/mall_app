@@ -23,22 +23,17 @@ class MallCard extends StatelessWidget {
         child: Column(
           children: [
             // Display the image of the mall if available
-            BlocBuilder<NetworkBloc, NetworkState>(builder: (context, state) {
-              if (state is NetworkSuccess) {
-                //return Image.network
-              } else {
-                return mall.image != null
-                    ? Image.file(File(mall.image!),
-                        fit: BoxFit.cover, height: 200, width: double.infinity)
-                    : Container(
-                        height: 200,
-                        width: double.infinity,
-                        color: Colors.grey[300],
-                        child: Center(child: Text('No Image Available')),
-                      );
-              }
-              return Container();
-            }),
+
+            mall.image != null
+                ? Image.file(File(mall.image!),
+                    fit: BoxFit.cover, height: 200, width: double.infinity)
+                : Container(
+                    height: 200,
+                    width: double.infinity,
+                    color: Colors.grey[300],
+                    child: Center(child: Text('No Image Available')),
+                  ),
+
             Padding(
               padding: const EdgeInsets.all(12.0),
               child: Column(

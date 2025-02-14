@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mall_app/blocs/network_bloc/network_bloc.dart';
+import 'package:mall_app/providers/malls_provider.dart';
+import 'package:mall_app/providers/shops_provider.dart';
 import 'package:mall_app/screens/home_screen.dart';
 import 'package:mall_app/services/hive_service.dart';
+import 'package:provider/provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -11,7 +14,14 @@ void main() async {
 
   runApp(BlocProvider(
     create: (context) => NetworkBloc()..add(NetworkObserve()),
-    child: const MainApp(),
+    child: MultiProvider(providers: [
+      ChangeNotifierProvider(
+        create: (context) => MallsProvider(),
+      ),
+      ChangeNotifierProvider(
+        create: (context) => ShopsProvider(),
+      )
+    ], child: const MainApp()),
   ));
 }
 

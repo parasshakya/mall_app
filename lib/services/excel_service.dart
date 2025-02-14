@@ -10,7 +10,8 @@ class ExcelService {
   static Future<void> appendSingleMallToExcel(Mall mall) async {
     if (await _requestStoragePermission()) {
       final directory = Directory('/storage/emulated/0/Download');
-      File file = File('$directory/malls.xlsx');
+      final path = '${directory.path}/malls.xlsx';
+      File file = File(path);
       Excel excel;
 
       if (await file.exists()) {
@@ -69,82 +70,94 @@ class ExcelService {
   }
 
   static Future<void> appendSingleShopToExcel(Shop shop) async {
-    final directory = Directory('/storage/emulated/0/Download');
-    final path = "${directory.path}/malls.xlsx";
-    final file = File(path);
+    if (await _requestStoragePermission()) {
+      final directory = Directory('/storage/emulated/0/Download');
+      final path = "${directory.path}/malls.xlsx";
+      final file = File(path);
 
-    Excel excel;
+      Excel excel;
 
-    if (await file.exists()) {
-      // Load existing Excel file
-      var bytes = file.readAsBytesSync();
-      excel = Excel.decodeBytes(bytes);
-    } else {
-      // Create a new Excel file
-      excel = Excel.createExcel();
-    }
+      if (await file.exists()) {
+        // Load existing Excel file
+        var bytes = file.readAsBytesSync();
+        excel = Excel.decodeBytes(bytes);
+      } else {
+        // Create a new Excel file
+        excel = Excel.createExcel();
+      }
 
-    Sheet sheet = excel['Shops'];
+      Sheet sheet = excel['Shops'];
 
-    // If the sheet is empty, add headers first
-    if (sheet.rows.isEmpty) {
+      // If the sheet is empty, add headers first
+      if (sheet.rows.isEmpty) {
+        sheet.appendRow([
+          TextCellValue("Shop ID"),
+          TextCellValue("Mall ID"),
+          TextCellValue("Name"),
+          TextCellValue("Category"),
+          TextCellValue("Floor Number"),
+          TextCellValue("Unit Number"),
+          TextCellValue("Owner Name"),
+          TextCellValue("Contact Number"),
+          TextCellValue("Email"),
+          TextCellValue("Opening Hours"),
+          TextCellValue("Products"),
+          TextCellValue("Avg Monthly Sales"),
+          TextCellValue("Customer Traffic"),
+          TextCellValue("Social Media Links"),
+          TextCellValue("Payment Methods"),
+          TextCellValue("Image")
+        ]);
+      }
+
+      // Append the new shop data
       sheet.appendRow([
-        TextCellValue("Shop ID"),
-        TextCellValue("Mall ID"),
-        TextCellValue("Name"),
-        TextCellValue("Category"),
-        TextCellValue("Floor Number"),
-        TextCellValue("Unit Number"),
-        TextCellValue("Owner Name"),
-        TextCellValue("Contact Number"),
-        TextCellValue("Email"),
-        TextCellValue("Opening Hours"),
-        TextCellValue("Products"),
-        TextCellValue("Avg Monthly Sales"),
-        TextCellValue("Customer Traffic"),
-        TextCellValue("Social Media Links"),
-        TextCellValue("Payment Methods"),
-        TextCellValue("Image")
+        TextCellValue(shop.shop_id.toString()),
+        TextCellValue(shop.mall_id.toString()),
+        TextCellValue(shop.name),
+        TextCellValue(shop.category),
+        TextCellValue(shop.floor_number?.toString() ?? ""),
+        TextCellValue(shop.unit_number ?? ""),
+        TextCellValue(shop.owner_name),
+        TextCellValue(shop.contact_number),
+        TextCellValue(shop.email),
+        TextCellValue(shop.opening_hours),
+        TextCellValue(shop.products.join(", ")),
+        TextCellValue(shop.average_monthly_sales?.toString() ?? ""),
+        TextCellValue(shop.customer_traffic?.toString() ?? ""),
+        TextCellValue(shop.social_media_links?.join(", ") ?? ""),
+        TextCellValue(shop.payment_methods_accepted?.join(", ") ?? ""),
+        TextCellValue(shop.image ?? ""),
       ]);
-    }
 
-    // Append the new shop data
-    sheet.appendRow([
-      TextCellValue(shop.shop_id.toString()),
-      TextCellValue(shop.mall_id.toString()),
-      TextCellValue(shop.name),
-      TextCellValue(shop.category),
-      TextCellValue(shop.floor_number?.toString() ?? ""),
-      TextCellValue(shop.unit_number ?? ""),
-      TextCellValue(shop.owner_name),
-      TextCellValue(shop.contact_number),
-      TextCellValue(shop.email),
-      TextCellValue(shop.opening_hours),
-      TextCellValue(shop.products.join(", ")),
-      TextCellValue(shop.average_monthly_sales?.toString() ?? ""),
-      TextCellValue(shop.customer_traffic?.toString() ?? ""),
-      TextCellValue(shop.social_media_links?.join(", ") ?? ""),
-      TextCellValue(shop.payment_methods_accepted?.join(", ") ?? ""),
-      TextCellValue(shop.image ?? ""),
-    ]);
-
-    // Save the Excel file
-    List<int>? bytes = excel.save();
-    if (bytes != null) {
-      File(file.path)
-        ..createSync(recursive: true)
-        ..writeAsBytesSync(bytes);
+      // Save the Excel file
+      List<int>? bytes = excel.save();
+      if (bytes != null) {
+        File(file.path)
+          ..createSync(recursive: true)
+          ..writeAsBytesSync(bytes);
+      }
     }
   }
 
   // Request storage permissions
   static Future<bool> _requestStoragePermission() async {
-    final status = await Permission.manageExternalStorage.status;
+    // Check if permission is already granted
+    PermissionStatus status = await Permission.manageExternalStorage.status;
     if (status.isGranted) {
       return true;
     } else {
-      print("Storage permission denied");
-      return false;
+      // Request permission if not granted
+      PermissionStatus statusGranted =
+          await Permission.manageExternalStorage.request();
+
+      if (statusGranted.isGranted) {
+        return true;
+      } else {
+        // Optionally, show a message to the user about why permission is needed
+        print("Permission to manage external storage denied");
+        return false;
+      }
     }
   }
 }

@@ -5,9 +5,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mall_app/blocs/network_bloc/network_bloc.dart';
 import 'package:mall_app/models/shop.dart';
+import 'package:mall_app/providers/shops_provider.dart';
 import 'package:mall_app/services/csv_service.dart';
 import 'package:mall_app/services/excel_service.dart';
 import 'package:mall_app/services/hive_service.dart';
+import 'package:provider/provider.dart';
 
 class AddShopScreen extends StatefulWidget {
   const AddShopScreen({super.key});
@@ -20,6 +22,7 @@ class _AddShopScreenState extends State<AddShopScreen> {
   final _formKey = GlobalKey<FormState>();
   final _picker = ImagePicker();
   XFile? _image;
+  late ShopsProvider _shopsProvider;
 
   // Controllers for text fields
   final TextEditingController _shopIdController = TextEditingController();
@@ -120,16 +123,13 @@ class _AddShopScreenState extends State<AddShopScreen> {
           payment_methods_accepted: selectedPaymentMethods,
           image: _image!.path);
 
-      final networkState = context.read<NetworkBloc>().state;
-      if (networkState is NetworkSuccess) {
-        //submit shop data to backend
-      } else {
-        //save shop data locally
+      //save shop data locally
 
-        await HiveService.saveShop(newShop);
-      }
+      await HiveService.saveShop(newShop);
 
-      await CSVService.appendSingleShopToCSV(newShop);
+      _shopsProvider.addShop(newShop);
+
+      // await CSVService.appendSingleShopToCSV(newShop);
       await ExcelService.appendSingleShopToExcel(newShop);
 
       print("Shop Data Added: ${newShop.name}");
@@ -140,6 +140,7 @@ class _AddShopScreenState extends State<AddShopScreen> {
 
   @override
   Widget build(BuildContext context) {
+    _shopsProvider = Provider.of<ShopsProvider>(context);
     return Scaffold(
       appBar: AppBar(title: Text("Shop Form")),
       body: Padding(

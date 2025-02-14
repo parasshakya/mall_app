@@ -21,22 +21,16 @@ class ShopCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             /// Shop Image
-            BlocBuilder<NetworkBloc, NetworkState>(builder: (context, state) {
-              if (state is NetworkSuccess) {
-                //return Image.network
-              } else {
-                return shop.image != null
-                    ? Image.file(File(shop.image!),
-                        fit: BoxFit.cover, height: 200, width: double.infinity)
-                    : Container(
-                        height: 200,
-                        width: double.infinity,
-                        color: Colors.grey[300],
-                        child: Center(child: Text('No Image Available')),
-                      );
-              }
-              return Container();
-            }),
+
+            shop.image != null
+                ? Image.file(File(shop.image!),
+                    fit: BoxFit.cover, height: 200, width: double.infinity)
+                : Container(
+                    height: 200,
+                    width: double.infinity,
+                    color: Colors.grey[300],
+                    child: Center(child: Text('No Image Available')),
+                  ),
 
             const SizedBox(height: 10),
 
