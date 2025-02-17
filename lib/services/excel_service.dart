@@ -16,7 +16,7 @@ class ExcelService {
 
       if (await file.exists()) {
         // Load existing Excel file
-        var bytes = file.readAsBytesSync();
+        var bytes = await file.readAsBytes();
         excel = Excel.decodeBytes(bytes);
       } else {
         // Create a new Excel file
@@ -24,6 +24,12 @@ class ExcelService {
       }
 
       Sheet sheet = excel['Malls'];
+
+      print("Excel sheets: ${excel.sheets.keys}");
+
+      if (excel.sheets.containsKey('Sheet1')) {
+        excel.delete('Sheet1');
+      }
 
       // If the sheet is empty, add headers first
       if (sheet.rows.isEmpty) {
@@ -62,9 +68,7 @@ class ExcelService {
       // Save the Excel file
       List<int>? bytes = excel.save();
       if (bytes != null) {
-        File(file.path)
-          ..createSync(recursive: true)
-          ..writeAsBytesSync(bytes);
+        await File(file.path).writeAsBytes(bytes);
       }
     }
   }
@@ -79,7 +83,7 @@ class ExcelService {
 
       if (await file.exists()) {
         // Load existing Excel file
-        var bytes = file.readAsBytesSync();
+        var bytes = await file.readAsBytes(); // Non-blocking
         excel = Excel.decodeBytes(bytes);
       } else {
         // Create a new Excel file
@@ -87,6 +91,12 @@ class ExcelService {
       }
 
       Sheet sheet = excel['Shops'];
+
+      print("Excel sheets: ${excel.sheets.keys}");
+
+      if (excel.sheets.containsKey('Sheet1')) {
+        excel.delete('Sheet1');
+      }
 
       // If the sheet is empty, add headers first
       if (sheet.rows.isEmpty) {
@@ -133,9 +143,7 @@ class ExcelService {
       // Save the Excel file
       List<int>? bytes = excel.save();
       if (bytes != null) {
-        File(file.path)
-          ..createSync(recursive: true)
-          ..writeAsBytesSync(bytes);
+        await File(file.path).writeAsBytes(bytes);
       }
     }
   }
